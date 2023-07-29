@@ -1,15 +1,15 @@
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class Player : MonoBehaviour
 {
     private GameManager gameManager;
+    private AudioSource audioSource;
     private GameObject heart;
 
     private SpriteRenderer spriteRenderer;
     public Sprite[] runSprites;
     public Sprite climbSprite;
-    private int spriteIndex;
+    private int spriteIndex = 0;
 
     private Rigidbody2D rb2d;
     private Vector2 direction;
@@ -20,11 +20,21 @@ public class Player : MonoBehaviour
     private bool grounded;
     private bool climbing;
 
+    private int runClipIndex;
+    private int climbClipIndex;
+
+    public AudioClip jumpClip;
+    public AudioClip deathClip;
+    public AudioClip winClip;
+    public AudioClip[] runClips;
+    public AudioClip[] climbClips;
+
     public float speed = 5f;
     public float jumpForce = 5f;
 
     private void Awake()
     {
+        audioSource = GetComponent<AudioSource>();
         gameManager = FindObjectOfType<GameManager>();
         spriteRenderer = GetComponent<SpriteRenderer>();
         rb2d = GetComponent<Rigidbody2D>();
@@ -39,6 +49,8 @@ public class Player : MonoBehaviour
     private void OnEnable()
     {
         InvokeRepeating("AnimateSprite", 1/12f, 1/12f);
+        InvokeRepeating("RunningSound", 1/3f, 1/3f);
+        InvokeRepeating("ClimbingSound", 1/3f, 1/3f);
     }
 
     private void OnDisable()
@@ -85,6 +97,7 @@ public class Player : MonoBehaviour
         else if(grounded && Input.GetButtonDown("Jump"))
         {
             direction = Vector2.up * jumpForce;
+            audioSource.PlayOneShot(jumpClip);
         } 
         else
         {
@@ -98,7 +111,8 @@ public class Player : MonoBehaviour
         if (direction.x > 0f)
         {
             transform.eulerAngles = Vector3.zero;
-        } else if (direction.x < 0f)
+        } 
+        else if (direction.x < 0f)
         {
             transform.eulerAngles = new Vector3(0f, 180f, 0f);
         }
@@ -132,17 +146,59 @@ public class Player : MonoBehaviour
         }
     }
 
+    private void RunningSound()
+    {
+        if (direction.x != 0f)
+        {
+            runClipIndex++;
+
+            if (runClipIndex >= runClips.Length)
+            {
+                runClipIndex = 0;
+            }
+
+            audioSource.PlayOneShot(runClips[runClipIndex]);
+        }
+    }
+
+    private void ClimbingSound()
+    {
+        if(direction.y != 0f && climbing)
+        {
+              climbClipIndex++;
+
+            if (climbClipIndex >= climbClips.Length)
+            {
+                climbClipIndex = 0;
+            }
+
+            audioSource.PlayOneShot(climbClips[climbClipIndex]);
+        }
+    }
+
+    private void DeathSound()
+    {
+        audioSource.PlayOneShot(deathClip);
+    }
+
+    private void WinSound()
+    {
+        audioSource.PlayOneShot(winClip);
+    }
+
     private void OnCollisionEnter2D(Collision2D collision)
     {
         if(collision.transform.CompareTag("Princess"))
         {
             enabled = false;
-            heart.gameObject.GetComponent<SpriteRenderer>().enabled = true;
+            heart.GetComponent<SpriteRenderer>().enabled = true;
+            WinSound();
             gameManager.GetComponent<GameManager>().LevelCompleted();
         }
         else if(collision.transform.CompareTag("Barrel"))
         {
             enabled = false;
+            DeathSound();
             gameManager.GetComponent<GameManager>().LevelFailed();
         }
     }
