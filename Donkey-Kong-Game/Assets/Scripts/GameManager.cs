@@ -7,6 +7,7 @@ public class GameManager : MonoBehaviour
     private int level;
     public int lives;
     public int score;
+    public int highScore = 0;
 
     private void Start()
     {
@@ -69,6 +70,10 @@ public class GameManager : MonoBehaviour
 
         if (lives <= 0)
         {
+            if (score > highScore)
+            {
+                highScore = score;
+            }
             NewGame();
         }
         else

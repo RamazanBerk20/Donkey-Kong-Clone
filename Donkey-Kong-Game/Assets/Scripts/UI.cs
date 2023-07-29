@@ -9,6 +9,7 @@ public class UI : MonoBehaviour
 
     public TextMeshProUGUI livesText;
     public TextMeshProUGUI scoreText;
+    public TextMeshProUGUI highScoreText;
 
     private void Awake()
     {
@@ -35,5 +36,6 @@ public class UI : MonoBehaviour
     {
         livesText.text = "Lives: " + gameManager.lives.ToString();
         scoreText.text = "Score: " + gameManager.score.ToString();
+        highScoreText.text = "High Score: " + gameManager.highScore.ToString();
     }
 }

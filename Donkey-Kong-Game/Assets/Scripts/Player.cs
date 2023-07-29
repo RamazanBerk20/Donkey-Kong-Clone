@@ -148,7 +148,7 @@ public class Player : MonoBehaviour
 
     private void RunningSound()
     {
-        if (direction.x != 0f)
+        if (direction.x != 0f && grounded)
         {
             runClipIndex++;
 
